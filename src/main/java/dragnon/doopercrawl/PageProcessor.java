@@ -26,6 +26,7 @@ class PageProcessor implements Function<String, Stream<String>> {
 
     @Override
     public Stream<String> apply(String url) {
+//        System.out.println("PAGE: "+url);
         System.out.print(".");
         StringBuffer result = null;
         try {

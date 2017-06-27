@@ -35,11 +35,14 @@ class Browser {
         if (siteMap.containsFromLink(fromUrl)) {
             return;
         }
-        if(followPolicy.test(fromUrl)) {
+        if (followPolicy.test(fromUrl)) {
             linkExtractor.apply(fromUrl)
                     .forEach(toUrl -> {
                         siteMap.addIfAbsent(link(fromUrl, toUrl));
-                        processPage(toUrl);
+                        if (!siteMap.containsToLink(toUrl)) {
+                            processPage(toUrl);
+                            siteMap.markFollowedTo(toUrl);
+                        }
                     });
         }
     }

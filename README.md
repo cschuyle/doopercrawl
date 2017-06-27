@@ -28,6 +28,7 @@ C:\\> `gradlew.bat`
     * These transformations are done to URLs:
         * Any tags (#tag suffix) are stripped.
         * If a link is missing the domain, an attempt is made to "normalize"/"canonicalize" it by prefixing it with the root's full protocol, domain, and port.
+        * Relative paths (../.. etc.) are normalized properly in many cases.
     * There are sooo many other things that could be done, among them:
         * Query strings are left untouched - they could stripped; or the order of the parameters could be normalized.
         * No adjustment of case is done.  In reality host names at least should be case-insensitive.
