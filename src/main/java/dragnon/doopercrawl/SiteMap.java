@@ -8,17 +8,17 @@ import java.util.Set;
 class SiteMap {
 
     private final Set<String> fromUrls = new HashSet<>();
-    private final Set<Pair<String, String>> links = new HashSet<>();
+    private final Set<Link> links = new HashSet<>();
 
     public boolean containsFromLink(String fromUrl) {
         return fromUrls.contains(fromUrl);
     }
 
-    public void addIfAbsent(Pair<String, String> link) {
+    public void addIfAbsent(Link link) {
         if (links.contains(link)) {
             return;
         }
-        markFollowed(link.getLeft());
+        markFollowed(link.from());
         links.add(link);
     }
 
@@ -26,7 +26,7 @@ class SiteMap {
         fromUrls.add(fromUrl);
     }
 
-    public Set<Pair<String, String>> getLinks() {
+    public Set<Link> getLinks() {
         return links;
     }
 }

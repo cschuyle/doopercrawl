@@ -1,13 +1,13 @@
 package dragnon.doopercrawl;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import static dragnon.doopercrawl.Link.link;
 
 class Browser {
 
@@ -38,13 +38,13 @@ class Browser {
         if(followPolicy.test(fromUrl)) {
             linkExtractor.apply(fromUrl)
                     .forEach(toUrl -> {
-                        siteMap.addIfAbsent(Pair.of(fromUrl, toUrl));
+                        siteMap.addIfAbsent(link(fromUrl, toUrl));
                         processPage(toUrl);
                     });
         }
     }
 
-    public Set<Pair<String, String>> getLinks() {
+    public Set<Link> getLinks() {
         return siteMap.getLinks();
     }
 }
