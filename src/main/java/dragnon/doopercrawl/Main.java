@@ -1,5 +1,7 @@
 package dragnon.doopercrawl;
 
+import java.util.Set;
+
 import static java.util.Comparator.comparing;
 
 
@@ -10,12 +12,12 @@ public class Main {
             throw new RuntimeException("");
         }
         try (PageProcessor pageProcessor = new PageProcessor(new LinkExtractor(args[0], new LinkNormalizer()))) {
-            new Crawler(pageProcessor, new FollowPolicy(args[0]))
+            Set<Link> links = new Crawler(pageProcessor, new FollowPolicy(args[0]))
                     .crawl(args[0])
-                    .getLinks().stream()
-                    .sorted(comparing(Link::from)
-                            .thenComparing(Link::to))
+                    .getLinks();
+            links.stream().sorted(comparing(Link::from).thenComparing(Link::to))
                     .forEach(link -> System.out.println("LINK: " + link));
+            System.out.println("TOTAL: " + links.size() + " LINKS.");
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.err.println("USAGE: doopercrawl <URL to crawl>");

@@ -38,8 +38,8 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
     // https://hc.apache.org/httpcomponents-client-ga/tutorial/html/connmgmt.html
     private void initHttpClient() {
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        cm.setMaxTotal(10);
-        cm.setDefaultMaxPerRoute(2);
+        cm.setMaxTotal(100);
+        cm.setDefaultMaxPerRoute(20);
 
         client = HttpClients.custom()
                 .setConnectionManager(cm)

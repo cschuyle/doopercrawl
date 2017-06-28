@@ -29,6 +29,7 @@ class Crawler {
         }
         if (followPolicy.test(fromUrl)) {
             pageProcessor.apply(fromUrl)
+                    .parallel()
                     .forEach(toUrl -> {
                         siteMap.addIfAbsent(link(fromUrl, toUrl));
                         if (!siteMap.containsToLink(toUrl)) {
