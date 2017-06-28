@@ -1,6 +1,6 @@
 # (super-)dooper-crawler
 
-A little tiny web crawler in Java.
+A little tiny web crawler in Java.  One of those "Toy Problems".
 
 # Crawl a domain
 
@@ -43,4 +43,3 @@ C:\\> `gradlew.bat`
 * Both URL parsing and HTML parsing should be considered not production quality.  More robust behavior for varied input formats would make the crawling more precise, and capture more pages.  In summary:
     * Consider something more robust than java.net.URL/URI to parse URLs.
     * Consider something besides a regular expression to parse URLS out of HTML.
-* Optimization: Based on document type, some documents (presumably large ones such as images) could be skipped for link extraction (and therefore even the content needn't be downloaded), because non-HTML documents wouldn't have links in them.    

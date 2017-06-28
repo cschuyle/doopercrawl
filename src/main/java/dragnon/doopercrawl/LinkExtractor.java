@@ -31,19 +31,27 @@ public class LinkExtractor implements Function<String, Stream<String>> {
         }
     }
 
-    private static final Pattern pattern = Pattern.compile("<a[^>]*?\\s+href\\s*=\\s*\"([^\"]*?)\"\\s*>",
+    private static final Pattern anchorPattern = Pattern.compile("<a[^>]*?\\s+href\\s*=\\s*\"([^\"]*?)\"",
+            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
+
+    private static final Pattern imgPattern = Pattern.compile("<img[^>]*?\\s+src\\s*=\\s*\"([^\"]*?)\"",
             Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
 
     @Override
-    public Stream<String> apply(String fromUrl) {
-        Matcher matcher = pattern.matcher(fromUrl);
+    public Stream<String> apply(String content) {
         List<String> matches = new ArrayList<>();
-        while (matcher.find()) {
-            matches.add(matcher.group(1));
-        }
+        addMatches(content, anchorPattern, matches, "A");
+        addMatches(content, imgPattern, matches, "IMAGE");
         return matches.stream()
-                .flatMap(linkNormalizer.apply(fromUrl, rootPage))
+                .flatMap(linkNormalizer.apply(content, rootPage))
                 .distinct();
+    }
+
+    private void addMatches(String fromUrl, Pattern pattern, List<String> matchesAccumulator, String label) {
+        Matcher matcher = pattern.matcher(fromUrl);
+        while (matcher.find()) {
+            matchesAccumulator.add(matcher.group(1));
+        }
     }
 
 }
