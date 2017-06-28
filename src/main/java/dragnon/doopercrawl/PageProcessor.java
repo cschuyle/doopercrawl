@@ -24,7 +24,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
     private CloseableHttpClient client = null;
     private LinkExtractor linkExtractor;
 
-    public PageProcessor(LinkExtractor linkExtractor) {
+     PageProcessor(LinkExtractor linkExtractor) {
         this.linkExtractor = linkExtractor;
         initHttpClient();
     }
@@ -77,6 +77,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
                     request.releaseConnection();
                 }
             } catch (IOException e) {
+                // GULP
             }
         }
 
@@ -98,7 +99,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
             BufferedReader rd = new BufferedReader(
                     new InputStreamReader(entity.getContent()));
 
-            StringBuffer result = new StringBuffer();
+            StringBuilder result = new StringBuilder();
             String line;
             while ((line = rd.readLine()) != null) {
                 result.append(line);
@@ -120,6 +121,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
                     request.releaseConnection();
                 }
             } catch (IOException e) {
+                // GULP
             }
         }
     }

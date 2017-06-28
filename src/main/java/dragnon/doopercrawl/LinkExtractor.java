@@ -16,7 +16,7 @@ public class LinkExtractor implements Function<String, Stream<String>> {
     private final String rootPage;
     private final LinkNormalizer linkNormalizer;
 
-    public LinkExtractor(String rootUrl, LinkNormalizer linkNormalizer) {
+    LinkExtractor(String rootUrl, LinkNormalizer linkNormalizer) {
         this.linkNormalizer = linkNormalizer;
 
         if (rootUrl == null) {
@@ -40,14 +40,14 @@ public class LinkExtractor implements Function<String, Stream<String>> {
     @Override
     public Stream<String> apply(String content) {
         List<String> matches = new ArrayList<>();
-        addMatches(content, anchorPattern, matches, "A");
-        addMatches(content, imgPattern, matches, "IMAGE");
+        addMatches(content, anchorPattern, matches);
+        addMatches(content, imgPattern, matches);
         return matches.stream()
                 .flatMap(linkNormalizer.apply(content, rootPage))
                 .distinct();
     }
 
-    private void addMatches(String fromUrl, Pattern pattern, List<String> matchesAccumulator, String label) {
+    private void addMatches(String fromUrl, Pattern pattern, List<String> matchesAccumulator) {
         Matcher matcher = pattern.matcher(fromUrl);
         while (matcher.find()) {
             matchesAccumulator.add(matcher.group(1));

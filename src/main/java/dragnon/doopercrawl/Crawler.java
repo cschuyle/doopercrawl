@@ -13,12 +13,12 @@ class Crawler {
     private Function<String, Stream<String>> pageProcessor;
     private Predicate<String> followPolicy;
 
-    public Crawler(Function<String, Stream<String>> pageProcessor, Predicate<String> followPolicy) {
+    Crawler(Function<String, Stream<String>> pageProcessor, Predicate<String> followPolicy) {
         this.pageProcessor = pageProcessor;
         this.followPolicy = followPolicy;
     }
 
-    public Crawler crawl(String url) {
+    Crawler crawl(String url) {
         processPage(url);
         return this;
     }
@@ -40,7 +40,7 @@ class Crawler {
         }
     }
 
-    public Set<Link> getLinks() {
+    Set<Link> getLinks() {
         return siteMap.getLinks();
     }
 }

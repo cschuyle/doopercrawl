@@ -6,19 +6,19 @@ public class Link {
 
     private final ImmutablePair<String, String> pair;
 
-    public Link(String from, String to) {
+    private Link(String from, String to) {
         this.pair = new ImmutablePair<String, String>(from, to);
     }
 
-    public static Link link(String from, String to) {
+    static Link link(String from, String to) {
         return new Link(from, to);
     }
 
-    public String from() {
+    String from() {
         return pair.getLeft();
     }
 
-    public String to() {
+    String to() {
         return pair.getRight();
     }
 

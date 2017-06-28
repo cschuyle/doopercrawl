@@ -20,7 +20,7 @@ public class LinkExtractorTest {
     private static LinkNormalizer linkNormalizer = new LinkNormalizer() {
         @Override
         public Function<String, Stream<String>> apply(String fromUrl, String rootPage) {
-            return toUrl -> Stream.of(toUrl);
+            return Stream::of;
         }
     };
 

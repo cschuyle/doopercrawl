@@ -8,7 +8,7 @@ class FollowPolicy implements Predicate<String> {
 
     private String host;
 
-    public FollowPolicy(String homePage) {
+    FollowPolicy(String homePage) {
         try {
             host = new URI(homePage).getHost().toLowerCase();
         } catch (URISyntaxException e) {

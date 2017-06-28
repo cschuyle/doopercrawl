@@ -7,8 +7,8 @@ import static org.junit.Assert.assertThat;
 
 public class LinkNormalizerTest {
 
-    public static final String rootUrl = "http://domain.com";
-    LinkNormalizer normalizer = new LinkNormalizer();
+    private static final String rootUrl = "http://domain.com";
+    private LinkNormalizer normalizer = new LinkNormalizer();
 
     @Test
     public void stripsSpaces() {
