@@ -10,7 +10,7 @@ public class Main {
             throw new RuntimeException("");
         }
         try (PageProcessor pageProcessor = new PageProcessor(new LinkExtractor(args[0], new LinkNormalizer()))) {
-            new Browser(pageProcessor, new FollowPolicy(args[0]))
+            new Crawler(pageProcessor, new FollowPolicy(args[0]))
                     .crawl(args[0])
                     .getLinks().stream()
                     .sorted(comparing(Link::from)

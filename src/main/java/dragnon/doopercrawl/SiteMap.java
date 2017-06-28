@@ -10,28 +10,38 @@ class SiteMap {
     private final Set<Link> links = new HashSet<>();
 
     public boolean containsFromLink(String fromUrl) {
-        return fromUrls.contains(fromUrl);
+        synchronized(fromUrls) {
+            return fromUrls.contains(fromUrl);
+        }
     }
 
     public boolean containsToLink(String fromUrl) {
-        return toUrls.contains(fromUrl);
+        synchronized(toUrls) {
+            return toUrls.contains(fromUrl);
+        }
     }
 
     public boolean addIfAbsent(Link link) {
-        if (links.contains(link)) {
-            return false;
+        synchronized(links) {
+            if (links.contains(link)) {
+                return false;
+            }
+            links.add(link);
         }
         markFollowedFrom(link.from());
-        links.add(link);
         return true;
     }
 
     public void markFollowedFrom(String fromUrl) {
-        fromUrls.add(fromUrl);
+        synchronized(fromUrls) {
+            fromUrls.add(fromUrl);
+        }
     }
 
     public void markFollowedTo(String toUrl) {
-        toUrls.add(toUrl);
+        synchronized(toUrls) {
+            toUrls.add(toUrl);
+        }
     }
 
     public Set<Link> getLinks() {

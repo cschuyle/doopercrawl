@@ -15,10 +15,9 @@ import java.io.InputStreamReader;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Throwables.propagate;
+
 class PageProcessor implements Function<String, Stream<String>>, Closeable {
-    //            LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
-    //            int cores = Runtime.getRuntime().availableProcessors();
-    //            ThreadPoolExecutor executor = new ThreadPoolExecutor(cores, 2 * cores, 1, TimeUnit.MINUTES, queue);
 
     private CloseableHttpClient client = null;
     private Function<String, Stream<String>> linkExtractor;
@@ -30,24 +29,17 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
 
     @Override
     public Stream<String> apply(String url) {
-//        System.out.println("PAGE: "+url);
         System.out.print(".");
         StringBuffer result;
-        try {
-            result = getContent(url);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        result = getContent(url);
         return linkExtractor.apply(result.toString());
     }
 
     // https://hc.apache.org/httpcomponents-client-ga/tutorial/html/connmgmt.html
     private void initHttpClient() {
         PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-        // Increase max total connection to 200
-        cm.setMaxTotal(200);
-        // Increase default max connection per route to 20
-        cm.setDefaultMaxPerRoute(20);
+        cm.setMaxTotal(10);
+        cm.setDefaultMaxPerRoute(2);
 
         client = HttpClients.custom()
                 .setConnectionManager(cm)
@@ -55,7 +47,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
     }
 
     // https://www.mkyong.com/java/apache-httpclient-examples/
-    private StringBuffer getContent(String url) throws IOException {
+    private StringBuffer getContent(String url) {
         CloseableHttpResponse response = null;
         HttpGet request = null;
         HttpEntity entity = null;
@@ -76,15 +68,21 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
                 result.append(line);
             }
             return result;
+        } catch (IOException e) {
+            throw propagate(e);
         } finally {
-            if (entity != null) {
-                EntityUtils.consume(entity);
-            }
-            if (response != null) {
-                response.close();
-            }
-            if (request != null) {
-                request.releaseConnection();
+            try {
+                if (entity != null) {
+                    EntityUtils.consume(entity);
+                }
+                if (response != null) {
+                    response.close();
+                }
+                if (request != null) {
+                    request.releaseConnection();
+                }
+            } catch (IOException e) {
+                throw propagate(e);
             }
         }
     }

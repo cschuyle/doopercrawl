@@ -9,6 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import static com.google.common.base.Throwables.propagate;
+
 public class LinkExtractor implements Function<String, Stream<String>> {
 
     private final String rootPage;
@@ -26,7 +28,7 @@ public class LinkExtractor implements Function<String, Stream<String>> {
 
             rootPage = url.getProtocol() + "://" + url.getHost() + (url.getPort() == -1 ? "" : ":" + url.getPort());
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            throw propagate(e);
         }
     }
 

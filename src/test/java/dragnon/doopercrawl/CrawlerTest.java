@@ -14,7 +14,7 @@ import static dragnon.doopercrawl.Link.link;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class BrowserTest {
+public class CrawlerTest {
 
     private static final String homePage = "http://homePage";
 
@@ -28,9 +28,9 @@ public class BrowserTest {
     @Test
     public void pageWithNoLink() {
 
-        Browser browser = new Browser(url -> Stream.of(), alwaysFollow);
+        Crawler crawler = new Crawler(url -> Stream.of(), alwaysFollow);
 
-        Set<Link> links = browser.crawl(homePage).getLinks();
+        Set<Link> links = crawler.crawl(homePage).getLinks();
 
         assertThat(links, is(Collections.emptySet()));
     }
@@ -38,9 +38,9 @@ public class BrowserTest {
     @Test
     public void pageWithLink() {
 
-        Browser browser = new Browser(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1))), alwaysFollow);
+        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1))), alwaysFollow);
 
-        Set<Link> links = browser.crawl(homePage).getLinks();
+        Set<Link> links = crawler.crawl(homePage).getLinks();
 
         assertThat(links, is(ImmutableSet.of(link(homePage, link1))));
     }
@@ -48,9 +48,9 @@ public class BrowserTest {
     @Test
     public void pageWith2Links() {
 
-        Browser browser = new Browser(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1, link2))), alwaysFollow);
+        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1, link2))), alwaysFollow);
 
-        Set<Link> links = browser.crawl(homePage).getLinks();
+        Set<Link> links = crawler.crawl(homePage).getLinks();
 
         assertThat(links, is(ImmutableSet.of(
                 link(homePage, link1),
@@ -60,9 +60,9 @@ public class BrowserTest {
     @Test
     public void linksAreNotDuplicatedInOutput() {
 
-        Browser browser = new Browser(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1, link1))), alwaysFollow);
+        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1, link1))), alwaysFollow);
 
-        Set<Link> links = browser.crawl(homePage).getLinks();
+        Set<Link> links = crawler.crawl(homePage).getLinks();
 
         assertThat(links, is(ImmutableSet.of(
                 link(homePage, link1))));
@@ -70,8 +70,8 @@ public class BrowserTest {
 
     @Test
     public void linkTraversalIsRecursive() {
-        Browser browser = new Browser(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1), link1, Stream.of(link2))), alwaysFollow);
-        Set<Link> links = browser.crawl(homePage).getLinks();
+        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1), link1, Stream.of(link2))), alwaysFollow);
+        Set<Link> links = crawler.crawl(homePage).getLinks();
 
         assertThat(links, is(ImmutableSet.of(
                 link(homePage, link1),
@@ -81,18 +81,18 @@ public class BrowserTest {
 
     @Test
     public void tolerateCircularDependencies() {
-        Browser browser = new Browser(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1), link1, Stream.of(homePage))), alwaysFollow);
-        Set<Link> links = browser.crawl(homePage).getLinks();
+        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1), link1, Stream.of(homePage))), alwaysFollow);
+        Set<Link> links = crawler.crawl(homePage).getLinks();
 
         assertThat(links, is(ImmutableSet.of(link(homePage, link1), link(link1, homePage))));
     }
 
     @Test
     public void doNotFollowLinksOutsideHomePageDomain() {
-        Browser browser = new Browser(url -> fakeLinkExtractor(url, ImmutableMap.of(
+        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(
                 homePage, Stream.of(link1, alsoInHomeDomain),
                 link1, Stream.of(link2))), onlyHomeDomain);
-        Set<Link> links = browser.crawl(homePage).getLinks();
+        Set<Link> links = crawler.crawl(homePage).getLinks();
         assertThat(links, is(ImmutableSet.of(
                 link(homePage, alsoInHomeDomain),
                 link(homePage, link1))));

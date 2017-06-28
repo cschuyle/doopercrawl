@@ -1,42 +1,34 @@
 package dragnon.doopercrawl;
 
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static dragnon.doopercrawl.Link.link;
 
-class Browser {
+class Crawler {
 
-    private Function<String, Stream<String>> linkExtractor;
+    private SiteMap siteMap = new SiteMap();
+    private Function<String, Stream<String>> pageProcessor;
     private Predicate<String> followPolicy;
 
-    private Queue<String> pendingQueue = new LinkedBlockingDeque<>(1000);
-
-    public Browser(Function<String, Stream<String>> linkExtractor, Predicate<String> followPolicy) {
-        this.linkExtractor = linkExtractor;
+    public Crawler(Function<String, Stream<String>> pageProcessor, Predicate<String> followPolicy) {
+        this.pageProcessor = pageProcessor;
         this.followPolicy = followPolicy;
     }
 
-    public Browser crawl(String url) {
-        pendingQueue.add(url);
-        while (!pendingQueue.isEmpty()) {
-            processPage(pendingQueue.remove());
-        }
+    public Crawler crawl(String url) {
+        processPage(url);
         return this;
     }
-
-    private SiteMap siteMap = new SiteMap();
 
     private void processPage(String fromUrl) {
         if (siteMap.containsFromLink(fromUrl)) {
             return;
         }
         if (followPolicy.test(fromUrl)) {
-            linkExtractor.apply(fromUrl)
+            pageProcessor.apply(fromUrl)
                     .forEach(toUrl -> {
                         siteMap.addIfAbsent(link(fromUrl, toUrl));
                         if (!siteMap.containsToLink(toUrl)) {
