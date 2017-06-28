@@ -10,6 +10,14 @@ A little tiny web crawler in Java.
 
 `./gradlew run -Purl=some.domain.com`
 
+The output format is a sequence of "links" of the format:
+
+```
+LINK: from-url ==> to-url
+```
+
+This means that one from-url page, thre is a link to-url page.  You can think of the individual links as edges in a graph.
+
 # Run the tests
 
 % `./gradlew test`
