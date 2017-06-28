@@ -25,16 +25,17 @@ public class LinkExtractor implements Function<String, Stream<String>> {
         }
         try {
             URL url = new URL(rootUrl);
-
             rootPage = url.getProtocol() + "://" + url.getHost() + (url.getPort() == -1 ? "" : ":" + url.getPort());
         } catch (MalformedURLException e) {
             throw propagate(e);
         }
     }
 
+    private static final Pattern pattern = Pattern.compile("<a[^>]*?\\s+href\\s*=\\s*\"([^\"]*?)\"\\s*>",
+            Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
+
     @Override
     public Stream<String> apply(String fromUrl) {
-        Pattern pattern = Pattern.compile("<a[^>]*?\\s+href\\s*=\\s*\"([^\"]*?)\"\\s*>", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
         Matcher matcher = pattern.matcher(fromUrl);
         List<String> matches = new ArrayList<>();
         while (matcher.find()) {

@@ -29,7 +29,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
 
     @Override
     public Stream<String> apply(String url) {
-        System.out.print(".");
+        System.err.print(".");
         StringBuffer result;
         result = getContent(url);
         return linkExtractor.apply(result.toString());
