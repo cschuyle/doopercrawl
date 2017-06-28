@@ -16,7 +16,7 @@ The output format is a sequence of "links" of the format:
 LINK: from-url ==> to-url
 ```
 
-This means that one from-url page, thre is a link to-url page.  You can think of the individual links as edges in a graph.
+This means that on the `from-url` page, there is a link to the `to-url` page.  You can think of the individual links as edges in a graph.
 
 # Run the tests
 
@@ -31,7 +31,7 @@ C:\\> `gradlew.bat`
 `./build/reports/tests/test/index.html`
 
 # Caveats / TO-DO's
-* The networking is very inefficient - connection sharing and multi-threading would make it Way Faster.
+* Multithreading would gve it a nice speedup.
 * A number of assumptions have been made regarding how to "canonicalize" URLs:
     * These transformations are done to URLs:
         * Any tags (#tag suffix) are stripped.
