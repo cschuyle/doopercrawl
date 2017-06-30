@@ -11,7 +11,7 @@ public class Main {
         if (args.length != 1) {
             throw new RuntimeException("");
         }
-        try (PageProcessor pageProcessor = new PageProcessor(new LinkExtractor(args[0], new LinkNormalizer()))) {
+        try (PageProcessor pageProcessor = new PageProcessor(new LinkExtractor(new LinkNormalizer()))) {
             Set<Link> links = new Crawler(pageProcessor, new FollowPolicy(args[0]))
                     .crawl(args[0])
                     .getLinks();
@@ -19,9 +19,9 @@ public class Main {
                     .forEach(link -> System.out.println("LINK: " + link));
             System.out.println("TOTAL: " + links.size() + " LINKS.");
         } catch (Exception e) {
-            System.err.println(e.getMessage());
-            System.err.println("USAGE: doopercrawl <URL to crawl>");
-            System.exit(-1);
+            Logger.error(e);
+            Logger.warn("USAGE: doopercrawl <URL to crawl>");
+            System.exit(-42);
         }
     }
 }

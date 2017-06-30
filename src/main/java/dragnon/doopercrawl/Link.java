@@ -14,11 +14,11 @@ public class Link {
         return new Link(from, to);
     }
 
-    String from() {
+    public String from() {
         return pair.getLeft();
     }
 
-    String to() {
+    public String to() {
         return pair.getRight();
     }
 

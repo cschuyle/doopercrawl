@@ -13,15 +13,15 @@ class SiteMap {
     private final Set<Link> links = new HashSet<>();
     private ReadWriteLock zuperlockr = new ReentrantReadWriteLock();
 
-    boolean containsFromLink(String fromUrl) {
+    public boolean containsFromLink(String fromUrl) {
         return iBeReading(() -> fromUrls.contains(fromUrl));
     }
 
-    boolean containsToLink(String fromUrl) {
+    public boolean containsToLink(String fromUrl) {
         return iBeReading(() -> toUrls.contains(fromUrl));
     }
 
-    void addIfAbsent(Link link) {
+    public void addIfAbsent(Link link) {
         iBeWriting(() -> {
             if (links.contains(link)) {
                 return;
@@ -32,16 +32,16 @@ class SiteMap {
         });
     }
 
-    private void markFollowedFrom(String fromUrl) {
-        iBeWriting(() -> fromUrls.add(fromUrl));
-    }
-
-    void markFollowedTo(String toUrl) {
+    public void markFollowedTo(String toUrl) {
         iBeWriting(() -> toUrls.add(toUrl));
     }
 
-    Set<Link> getLinks() {
+    public Set<Link> getLinks() {
         return iBeReading(() -> links);
+    }
+
+    private void markFollowedFrom(String fromUrl) {
+        iBeWriting(() -> fromUrls.add(fromUrl));
     }
 
     private <T> T iBeReading(Supplier<T> supplier) {

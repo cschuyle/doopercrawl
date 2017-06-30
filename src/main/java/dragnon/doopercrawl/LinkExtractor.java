@@ -1,34 +1,17 @@
 package dragnon.doopercrawl;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import static com.google.common.base.Throwables.propagate;
+public class LinkExtractor implements ILinkExtractor {
 
-public class LinkExtractor implements Function<String, Stream<String>> {
-
-    private final String rootPage;
     private final LinkNormalizer linkNormalizer;
 
-    LinkExtractor(String rootUrl, LinkNormalizer linkNormalizer) {
+    LinkExtractor(LinkNormalizer linkNormalizer) {
         this.linkNormalizer = linkNormalizer;
-
-        if (rootUrl == null) {
-            rootPage = null;
-            return;
-        }
-        try {
-            URL url = new URL(rootUrl);
-            rootPage = url.getProtocol() + "://" + url.getHost() + (url.getPort() == -1 ? "" : ":" + url.getPort());
-        } catch (MalformedURLException e) {
-            throw propagate(e);
-        }
     }
 
     private static final Pattern anchorPattern = Pattern.compile("<a[^>]*?\\s+href\\s*=\\s*\"([^\"]*?)\"",
@@ -38,12 +21,14 @@ public class LinkExtractor implements Function<String, Stream<String>> {
             Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.UNIX_LINES);
 
     @Override
-    public Stream<String> apply(String content) {
+    public Stream<String> apply(String fromUrl, String content) {
         List<String> matches = new ArrayList<>();
         addMatches(content, anchorPattern, matches);
         addMatches(content, imgPattern, matches);
+        String[] unmodified = new String[]{null};
         return matches.stream()
-                .flatMap(linkNormalizer.apply(content, rootPage))
+                .peek(unmodifiedUrl -> unmodified[0] = unmodifiedUrl)
+                .map(toUrl -> linkNormalizer.apply(fromUrl).apply(toUrl))
                 .distinct();
     }
 

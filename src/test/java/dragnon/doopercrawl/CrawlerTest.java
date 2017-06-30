@@ -7,12 +7,12 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static dragnon.doopercrawl.Link.link;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class CrawlerTest {
 
@@ -22,13 +22,13 @@ public class CrawlerTest {
     private static final String link2 = "http://two";
     private static final String alsoInHomeDomain = "http://homePage/hello.html";
 
-    private static final Predicate<String> alwaysFollow = always -> true;
-    private static final Predicate<String> onlyHomeDomain = url -> url.startsWith(homePage);
+    private static final IFollowPolicy alwaysFollow = always -> true;
+    private static final IFollowPolicy onlyHomeDomain = url -> url.startsWith(homePage);
 
     @Test
     public void pageWithNoLink() {
-
-        Crawler crawler = new Crawler(url -> Stream.of(), alwaysFollow);
+        PageProcessor pageProcessor = mock(PageProcessor.class);
+        Crawler crawler = new Crawler(pageProcessor, alwaysFollow);
 
         Set<Link> links = crawler.crawl(homePage).getLinks();
 
@@ -38,7 +38,7 @@ public class CrawlerTest {
     @Test
     public void pageWithLink() {
 
-        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1))), alwaysFollow);
+        Crawler crawler = new Crawler((from, to) -> fakeLinkExtractor(to, ImmutableMap.of(homePage, Stream.of(link1))), alwaysFollow);
 
         Set<Link> links = crawler.crawl(homePage).getLinks();
 
@@ -48,7 +48,7 @@ public class CrawlerTest {
     @Test
     public void pageWith2Links() {
 
-        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1, link2))), alwaysFollow);
+        Crawler crawler = new Crawler((from, to) -> fakeLinkExtractor(to, ImmutableMap.of(homePage, Stream.of(link1, link2))), alwaysFollow);
 
         Set<Link> links = crawler.crawl(homePage).getLinks();
 
@@ -60,7 +60,7 @@ public class CrawlerTest {
     @Test
     public void linksAreNotDuplicatedInOutput() {
 
-        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1, link1))), alwaysFollow);
+        Crawler crawler = new Crawler((from, to) -> fakeLinkExtractor(to, ImmutableMap.of(homePage, Stream.of(link1, link1))), alwaysFollow);
 
         Set<Link> links = crawler.crawl(homePage).getLinks();
 
@@ -70,7 +70,7 @@ public class CrawlerTest {
 
     @Test
     public void linkTraversalIsRecursive() {
-        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1), link1, Stream.of(link2))), alwaysFollow);
+        Crawler crawler = new Crawler((from, to) -> fakeLinkExtractor(to, ImmutableMap.of(homePage, Stream.of(link1), link1, Stream.of(link2))), alwaysFollow);
         Set<Link> links = crawler.crawl(homePage).getLinks();
 
         assertThat(links, is(ImmutableSet.of(
@@ -81,7 +81,7 @@ public class CrawlerTest {
 
     @Test
     public void tolerateCircularDependencies() {
-        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(homePage, Stream.of(link1), link1, Stream.of(homePage))), alwaysFollow);
+        Crawler crawler = new Crawler((from, to) -> fakeLinkExtractor(to, ImmutableMap.of(homePage, Stream.of(link1), link1, Stream.of(homePage))), alwaysFollow);
         Set<Link> links = crawler.crawl(homePage).getLinks();
 
         assertThat(links, is(ImmutableSet.of(link(homePage, link1), link(link1, homePage))));
@@ -89,7 +89,7 @@ public class CrawlerTest {
 
     @Test
     public void doNotFollowLinksOutsideHomePageDomain() {
-        Crawler crawler = new Crawler(url -> fakeLinkExtractor(url, ImmutableMap.of(
+        Crawler crawler = new Crawler((from, to) -> fakeLinkExtractor(to, ImmutableMap.of(
                 homePage, Stream.of(link1, alsoInHomeDomain),
                 link1, Stream.of(link2))), onlyHomeDomain);
         Set<Link> links = crawler.crawl(homePage).getLinks();

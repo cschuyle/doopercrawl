@@ -7,66 +7,64 @@ import static org.junit.Assert.assertThat;
 
 public class LinkNormalizerTest {
 
-    private static final String rootUrl = "http://domain.com";
+    private static final String fromPage = "http://domain.com";
     private LinkNormalizer normalizer = new LinkNormalizer();
 
     @Test
     public void stripsSpaces() {
-        assertThat(normalized("http://domain.com  "), is(rootUrl));
-        assertThat(normalized("  http://domain.com  "), is(rootUrl));
+        assertThat(normalized("http://domain.com"), is(fromPage));
+        assertThat(normalized("  http://domain.com  "), is(fromPage));
+        assertThat(normalized("http://domain.com/  "), is(fromPage));
     }
 
     @Test
     public void stripsTrailingSlash() {
+        assertThat(normalized("http://wot.fr"), is("http://wot.fr"));
         assertThat(normalized("http://wot.fr/"), is("http://wot.fr"));
         assertThat(normalized("http://wot.fr/a/b/"), is("http://wot.fr/a/b"));
-        assertThat(normalized("http://wot.fr/a////"), is("http://wot.fr/a"));
     }
 
     @Test
     public void normalizedSynonymsForRootDirectory() {
-        assertThat(normalized("."), is(rootUrl));
-        assertThat(normalized("./"), is(rootUrl));
-        assertThat(normalized("/"), is(rootUrl));
-        assertThat(normalized("///"), is(rootUrl));
+        assertThat(normalized("."), is(fromPage));
+        assertThat(normalized("./"), is(fromPage));
+        assertThat(normalized("/"), is(fromPage));
     }
 
     @Test
     public void resolvesRelativePath() {
-        assertThat(normalized("a/page.html", ".."), is(rootUrl));
-        assertThat(normalized("a/b/page.html", "../.."), is(rootUrl));
-        assertThat(normalized("a/b/page.html", "../..//"), is(rootUrl));
+        assertThat(normalized(fromPage + "/a/page.html", ".."), is(fromPage));
+        assertThat(normalized(fromPage + "/a/b/page.html", "../.."), is(fromPage));
     }
 
     @Test
     public void normalizesRootSlash() {
-        assertThat(normalized("/"), is(rootUrl));
-        assertThat(normalized("//"), is(rootUrl));
+        assertThat(normalized("/"), is(fromPage));
     }
 
     @Test
     public void stripsTags() {
-        assertThat(normalized("page.html#tag"), is(rootUrl + "/page.html"));
+        assertThat(normalized("page.html#tag"), is(fromPage + "/page.html"));
     }
 
     @Test
     public void prefixesWithRootPage() {
-        assertThat(normalized("a/page"), is(rootUrl + "/a/page"));
-        assertThat(normalized("a/page//"), is(rootUrl + "/a/page"));
-        assertThat(normalized(""), is(rootUrl));
+        assertThat(normalized("a/page"), is(fromPage + "/a/page"));
+        assertThat(normalized(""), is(fromPage));
+    }
+
+    @Test
+    public void handlesHostWithoutProtocol() {
+        assertThat(normalized("https://somewhere.com", "//www.google.com/intl/en/policies/privacy/"), is("https://www.google.com/intl/en/policies/privacy"));
+        assertThat(normalized("https://somewhere.com", "//www.google.com?a=42"), is("https://www.google.com?a=42"));
+        assertThat(normalized("https://somewhere.com", "//www.google.com"), is("https://www.google.com"));
     }
 
     private String normalized(String t) {
-        return normalizer.apply("use the other form of normalized()", rootUrl)
-                .apply(t)
-                .findFirst().get();
+        return normalizer.apply(fromPage).apply(t);
     }
 
     private String normalized(String fromUrl, String t) {
-        return normalizer.apply(fromUrl, rootUrl)
-                .apply(t)
-                .findFirst().get();
+        return normalizer.apply(fromUrl).apply(t);
     }
-
-
 }

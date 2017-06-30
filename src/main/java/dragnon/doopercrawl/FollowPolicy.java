@@ -2,13 +2,15 @@ package dragnon.doopercrawl;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.function.Predicate;
+import java.net.URL;
 
-class FollowPolicy implements Predicate<String> {
+import static dragnon.doopercrawl.Uris.parseUrl;
+
+class FollowPolicy implements IFollowPolicy {
 
     private String host;
 
-    FollowPolicy(String homePage) {
+    public FollowPolicy(String homePage) {
         try {
             host = new URI(homePage).getHost().toLowerCase();
         } catch (URISyntaxException e) {
@@ -19,8 +21,13 @@ class FollowPolicy implements Predicate<String> {
     @Override
     public boolean test(String s) {
         try {
-            return new URI(s).getHost().toLowerCase().equals(host);
-        } catch(URISyntaxException e) {
+            String host = parseUrl(s).map(URL::getHost).orElse(null);
+            if (host == null) {
+                return false;
+            }
+            return host.toLowerCase().equals(this.host);
+        } catch (Exception e) {
+            Logger.error(e);
             return false;
         }
     }

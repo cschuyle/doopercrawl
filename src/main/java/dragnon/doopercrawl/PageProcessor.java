@@ -8,6 +8,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.util.EntityUtils;
 
 import java.io.BufferedReader;
@@ -16,24 +17,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
-class PageProcessor implements Function<String, Stream<String>>, Closeable {
+class PageProcessor implements IPageProcessor, Closeable {
 
     private CloseableHttpClient client = null;
-    private LinkExtractor linkExtractor;
+    private ILinkExtractor linkExtractor;
 
-     PageProcessor(LinkExtractor linkExtractor) {
+    PageProcessor(ILinkExtractor linkExtractor) {
         this.linkExtractor = linkExtractor;
         initHttpClient();
     }
 
     @Override
-    public Stream<String> apply(String url) {
+    public Stream<String> apply(String referringUrl, String url) {
         System.err.print(".");
         if (shouldExtractLinks(url)) {
-            return linkExtractor.apply(getContent(url).orElse(""));
+            return linkExtractor.apply(url, getContent(referringUrl, url).orElse(""));
         }
         return Stream.empty();
     }
@@ -56,7 +56,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
             request = new HttpHead(url);
 
             // add request header
-            request.addHeader("User-Agent", "Mozilla 5.0");
+            setUserAgent(request);
             response = client.execute(request);
 
             Header[] allHeaders = response.getHeaders("Content-Type");
@@ -66,7 +66,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
             return Arrays.stream(allHeaders).anyMatch(h -> h.getValue().toLowerCase().contains("html"));
         } catch (Exception e) {
             //  Be resilient ... Anything can happen
-            e.printStackTrace();
+            Logger.error(e);
             return true;
         } finally {
             try {
@@ -84,7 +84,7 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
     }
 
     // https://www.mkyong.com/java/apache-httpclient-examples/
-    private Optional<String> getContent(String url) {
+    private Optional<String> getContent(String referringUrl, String url) {
         CloseableHttpResponse response = null;
         HttpGet request = null;
         HttpEntity entity = null;
@@ -92,8 +92,13 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
             request = new HttpGet(url);
 
             // add request header
-            request.addHeader("User-Agent", "Mozilla 5.0");
+            setUserAgent(request);
             response = client.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (statusCode != 200) {
+                Logger.warn("STATUS " + statusCode + " REFERRING URL: " + referringUrl + ", URL " + url);
+                return Optional.empty();
+            }
 
             entity = response.getEntity();
             BufferedReader rd = new BufferedReader(
@@ -105,9 +110,9 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
                 result.append(line);
             }
             return Optional.of(result.toString());
-        } catch (IOException e) {
+        } catch (Exception e) {
             //  Be resilient ... Anything can happen
-            e.printStackTrace();
+            Logger.error("REFERRING URL: " + referringUrl + ", URL: " + url, e);
             return Optional.empty();
         } finally {
             try {
@@ -124,6 +129,10 @@ class PageProcessor implements Function<String, Stream<String>>, Closeable {
                 // GULP
             }
         }
+    }
+
+    private void setUserAgent(AbstractHttpMessage request) {
+        request.addHeader("User-Agent", "Mozilla/5.0 (compatible; https://github.com/cschuyle/doopercrawl)");
     }
 
     @Override

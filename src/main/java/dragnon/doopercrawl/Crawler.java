@@ -1,42 +1,43 @@
 package dragnon.doopercrawl;
 
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import static dragnon.doopercrawl.Link.link;
 
 class Crawler {
 
     private SiteMap siteMap = new SiteMap();
-    private Function<String, Stream<String>> pageProcessor;
-    private Predicate<String> followPolicy;
+    private IPageProcessor pageProcessor;
+    private IFollowPolicy followPolicy;
 
-    Crawler(Function<String, Stream<String>> pageProcessor, Predicate<String> followPolicy) {
+    Crawler(IPageProcessor pageProcessor, IFollowPolicy followPolicy) {
         this.pageProcessor = pageProcessor;
         this.followPolicy = followPolicy;
     }
 
     Crawler crawl(String url) {
-        processPage(url);
+        processPage("INITIAL PAGE", url);
         return this;
     }
 
-    private void processPage(String fromUrl) {
-        if (siteMap.containsFromLink(fromUrl)) {
-            return;
-        }
-        if (followPolicy.test(fromUrl)) {
-            pageProcessor.apply(fromUrl)
-                    .parallel()
-                    .forEach(toUrl -> {
-                        siteMap.addIfAbsent(link(fromUrl, toUrl));
-                        if (!siteMap.containsToLink(toUrl)) {
-                            processPage(toUrl);
-                            siteMap.markFollowedTo(toUrl);
-                        }
-                    });
+    private void processPage(String referringPage, String url) {
+        try {
+            if (siteMap.containsFromLink(url)) {
+                return;
+            }
+            if (followPolicy.test(url)) {
+                pageProcessor.apply(referringPage, url)
+//                        .parallel() // This is too aggressive for many sites.  Instead, do some backoff/nice-ness to not get status 429, etc.
+                        .forEach(toUrl -> {
+                            siteMap.addIfAbsent(link(url, toUrl));
+                            if (!siteMap.containsToLink(toUrl)) {
+                                processPage(url, toUrl);
+                                siteMap.markFollowedTo(toUrl);
+                            }
+                        });
+            }
+        } catch (Exception e) {
+            Logger.error(e);
         }
     }
 

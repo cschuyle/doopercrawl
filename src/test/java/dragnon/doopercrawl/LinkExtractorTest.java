@@ -5,7 +5,6 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableList.of;
 import static java.util.stream.Collectors.toList;
@@ -19,14 +18,14 @@ public class LinkExtractorTest {
 
     private static LinkNormalizer linkNormalizer = new LinkNormalizer() {
         @Override
-        public Function<String, Stream<String>> apply(String fromUrl, String rootPage) {
-            return Stream::of;
+        public Function<String, String> apply(String fromUrlParam) {
+            return toUrl -> toUrl;
         }
     };
 
     @BeforeClass
     public static void setUp() {
-        linkExtractor = new LinkExtractor(null, linkNormalizer);
+        linkExtractor = new LinkExtractor(linkNormalizer);
     }
 
     @Test
@@ -45,7 +44,6 @@ public class LinkExtractorTest {
     public void aMatchWithOtherStuffBesidesHref() {
         assertThat(extractLink("<a class=\"wd-navbar-brand navbar-brand\" href=\"http://wiprodigital.com\">"),
                 is(of("http://wiprodigital.com")));
-
     }
 
     @Test
@@ -55,6 +53,6 @@ public class LinkExtractorTest {
     }
 
     private List<String> extractLink(String input) {
-        return linkExtractor.apply(input).collect(toList());
+        return linkExtractor.apply(null, input).collect(toList());
     }
 }
