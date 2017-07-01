@@ -16,11 +16,16 @@ class Crawler {
     }
 
     Crawler crawl(String url) {
-        processPage("INITIAL PAGE", url);
+        processPage("INITIAL PAGE", url, 0);
         return this;
     }
 
-    private void processPage(String referringPage, String url) {
+    private void processPage(String referringPage, String url, int depth) {
+        // This is not optimal.  But to not stack overflow on crawls where loops are not detected, we have this here for now.
+        if(depth > 100) {
+            Logger.warn("Returning without continuing for too-deep recursion");
+            return;
+        }
         try {
             if (siteMap.containsFromLink(url)) {
                 return;
@@ -31,7 +36,7 @@ class Crawler {
                         .forEach(toUrl -> {
                             siteMap.addIfAbsent(link(url, toUrl));
                             if (!siteMap.containsToLink(toUrl)) {
-                                processPage(url, toUrl);
+                                processPage(url, toUrl, depth + 1);
                                 siteMap.markFollowedTo(toUrl);
                             }
                         });

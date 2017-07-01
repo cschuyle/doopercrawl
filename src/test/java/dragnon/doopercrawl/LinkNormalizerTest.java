@@ -25,16 +25,27 @@ public class LinkNormalizerTest {
     }
 
     @Test
-    public void normalizedSynonymsForRootDirectory() {
+    public void synonymsForRootDirectory() {
         assertThat(normalized("."), is(fromPage));
         assertThat(normalized("./"), is(fromPage));
         assertThat(normalized("/"), is(fromPage));
     }
 
     @Test
-    public void resolvesRelativePath() {
+    public void relativePath() {
         assertThat(normalized(fromPage + "/a/page.html", ".."), is(fromPage));
         assertThat(normalized(fromPage + "/a/b/page.html", "../.."), is(fromPage));
+    }
+
+    @Test public void relativePathFromDotSlash() {
+        assertThat(normalized("http://google.com/about", "./principles.html"), is("http://google.com/about/principles.html"));
+    }
+    @Test
+    public void relativePathWhenSourceIsDirectoryThatLacksTrailingSlash() {
+        assertThat(normalized("http://google.com/permissions/blah", "../../permissions/using-the-logo.html"), is("http://google.com/permissions/using-the-logo.html"));
+        assertThat(normalized("http://google.com/permissions", "../permissions/using-the-logo.html"), is("http://google.com/permissions/using-the-logo.html"));
+        assertThat(normalized("http://google.com/intl/en/safetycenter/resources", "../../safetycenter/files/goodtoknow-booklet.pdf"),
+                is("http://google.com/intl/en/safetycenter/files/goodtoknow-booklet.pdf"));
     }
 
     @Test
@@ -54,7 +65,7 @@ public class LinkNormalizerTest {
     }
 
     @Test
-    public void handlesHostWithoutProtocol() {
+    public void hostWithoutProtocol() {
         assertThat(normalized("https://somewhere.com", "//www.google.com/intl/en/policies/privacy/"), is("https://www.google.com/intl/en/policies/privacy"));
         assertThat(normalized("https://somewhere.com", "//www.google.com?a=42"), is("https://www.google.com?a=42"));
         assertThat(normalized("https://somewhere.com", "//www.google.com"), is("https://www.google.com"));

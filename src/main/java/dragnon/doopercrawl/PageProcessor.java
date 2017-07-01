@@ -96,7 +96,7 @@ class PageProcessor implements IPageProcessor, Closeable {
             response = client.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                Logger.warn("STATUS " + statusCode + " REFERRING URL: " + referringUrl + ", URL " + url);
+                Logger.warn("STATUS " + statusCode + ", URL " + url + ", REFERRING URL: " + referringUrl);
                 return Optional.empty();
             }
 
@@ -112,7 +112,7 @@ class PageProcessor implements IPageProcessor, Closeable {
             return Optional.of(result.toString());
         } catch (Exception e) {
             //  Be resilient ... Anything can happen
-            Logger.error("REFERRING URL: " + referringUrl + ", URL: " + url, e);
+            Logger.error("URL: " + url + ", REFERRING URL: " + referringUrl , e);
             return Optional.empty();
         } finally {
             try {
